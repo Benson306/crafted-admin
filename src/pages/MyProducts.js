@@ -54,8 +54,8 @@ function MyProducts() {
   const [size, setSize] = useState(null);
   const [error, setError] = useState(null);
 
-  const [imageSrc, setImageSrc] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageSrc, setImageSrc] = useState([]);
+  const [imageUrl, setImageUrl] = useState([]);
 
 
   const [change, setChange] = useState(false);
@@ -90,73 +90,88 @@ function MyProducts() {
     setPrice(0);
     setDescription(null);
     setSize(null);
-    setImageUrl(null);
-    setImageSrc(null);
+    setImageUrl([]);
+    setImageSrc([]);
     setIsModalOpen(false);
   }
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.target.files[0];
-    setImageSrc(file);
-    setImageUrl(URL.createObjectURL(file));
-  };
+    const handleDrop = (e) => {
+      e.preventDefault();
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+      // Access the files dropped
+      const files = Array.from(e.dataTransfer.files);
 
-  const handleDelete = () => {
-    setImageSrc(null);
-  };
+      // Check if any files were dropped
+      if (files.length === 0) {
+          return; // Exit if no files are present
+      }
 
-  const handleSubmit = () => {
+      // Update the state to include the new files
+      setImageSrc((prevImages) => [...prevImages, ...files]);
 
-        if(productName == null || price < 1 || imageSrc == null || type == null || size == null || description == null){
-            toast('All fields must be filled',{
-                type:'error'
-            })
-            return
-        }
+      // Create URLs for the dropped files and update the state
+      const newImageUrls = files.map((file) => URL.createObjectURL(file));
+      setImageUrl((prevUrls) => [...prevUrls, ...newImageUrls]);
+    };
 
-        const formData = new FormData();
 
-        formData.append('productName', productName);
-        formData.append('type', type);
-        formData.append('price', price);
-        formData.append('image', imageSrc)
-        formData.append('description', description);
-        formData.append('size', size);
+    const handleDragOver = (e) => {
+      e.preventDefault();
+    };
 
-        fetch(`${process.env.REACT_APP_API_URL}/add_product`,{
-            method: 'POST',
-            headers: {
-              'Authorization':`Bearer ${token}`
-            },
-            body: formData
-        })
-        .then((response)=>{
-            if(response.ok){
-                closeModal();
-                toast('Success',{
-                    type:'success'
-                })
-                setChange(true)
-            }else{
-              response.json().then( err => {
-                console.log(err)
-                })
-                toast('Server Error',{
-                    type:'error'
-                })
-            }
-        })
-        .catch((err)=>{
-            toast('Server Error',{
-                type:'error'
-            })
-        })
-    }
+    const handleDelete = (index) => {
+        const updatedImageSrc = [...imageSrc];
+        const updatedImageUrl = [...imageUrl];
+        updatedImageSrc.splice(index, 1);
+        updatedImageUrl.splice(index, 1);
+        setImageSrc(updatedImageSrc);
+        setImageUrl(updatedImageUrl);
+    };
+
+
+    const handleSubmit = () => {
+      if (!productName || price < 1 || imageSrc.length === 0 || !type || !size || !description) {
+          toast('All fields must be filled', { type: 'error' });
+          return;
+      }
+
+      const formData = new FormData();
+
+      formData.append('productName', productName);
+      formData.append('type', type);
+      formData.append('price', price);
+      formData.append('description', description);
+      formData.append('size', size);
+
+      imageSrc.forEach((image, index) => {
+        console.log(image);
+          formData.append(`images`, image);
+      });
+
+      fetch(`${process.env.REACT_APP_API_URL}/add_product`, {
+          method: 'POST',
+          headers: {
+              'Authorization': `Bearer ${token}`
+          },
+          body: formData
+      })
+      .then((response) => {
+          if (response.ok) {
+              closeModal();
+              toast('Success', { type: 'success' });
+              setChange(true);
+          } else {
+              response.json().then(err => {
+                  console.log(err);
+              });
+              toast('Server Error', { type: 'error' });
+          }
+      })
+      .catch((err) => {
+          toast('Server Error', { type: 'error' });
+      });
+    };
+
 
   const handleDeleteItem = ( id ) => {
       fetch(`${process.env.REACT_APP_API_URL}/del_product/${id}`,{
@@ -227,8 +242,8 @@ function MyProducts() {
     setPrice(0);
     setDescription(null);
     setSize(null);
-    setImageUrl(null);
-    setImageSrc(null);
+    setImageUrl([]);
+    setImageSrc([]);
     setIsEditModalOpen(false);
   }
 
@@ -245,9 +260,14 @@ function MyProducts() {
     formData.append('productName', productName);
     formData.append('type', type);
     formData.append('price', price);
-    formData.append('image', imageSrc)
+    // formData.append('image', imageSrc)
     formData.append('description', description);
     formData.append('size', size);
+
+    imageSrc.forEach((image, index) => {
+      console.log(image);
+        formData.append(`images`, image);
+    });
 
     fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`,{
         method: 'PUT',
@@ -304,6 +324,21 @@ function MyProducts() {
     .catch( err => { console.log(err) })
   },[])
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Function to handle going to the next image
+  const handleNextImage = (dt) => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % dt.image.length);
+      console.log(currentImageIndex);
+  };
+
+  // Function to handle going to the previous image
+  const handlePrevImage = (dt) => {
+      setCurrentImageIndex((prevIndex) =>
+          (prevIndex - 1 + dt.image.length) % dt.image.length
+      );
+  };
+
   return (
     <>
       <PageTitle>My Products</PageTitle>
@@ -326,33 +361,37 @@ function MyProducts() {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             >
-            {imageSrc ? (
-                <div className="h-40 w-full relative flex">
-                <button
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                    onClick={handleDelete}
-                >
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            {imageUrl.length > 0 ? (
+              <div className="flex flex-wrap">
+                {imageUrl.map((url, index) => (
+                  <div key={index} className="h-40 w-40 relative m-1">
+                    <button
+                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                      onClick={() => handleDelete(index)}
                     >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="w-full h-full object-contain rounded-lg"
                     />
-                    </svg>
-                </button>
-                <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-contain rounded-lg"
-                />
-                </div>
+                  </div>
+                ))}
+              </div>
             ) : (
                 <label
                 htmlFor="dropzone-file"
@@ -386,7 +425,14 @@ function MyProducts() {
                     id="dropzone-file"
                     type="file"
                     className="hidden"
-                    onChange={(e) =>{ setImageSrc(e.target.files[0]); setImageUrl(URL.createObjectURL(e.target.files[0]) )}}
+                    name="images"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setImageSrc([...imageSrc, ...files]);
+                      const urls = files.map(file => URL.createObjectURL(file));
+                      setImageUrl([...imageUrl, ...urls]);
+                    }}
                 />
                 </label>
             )}
@@ -400,7 +446,7 @@ function MyProducts() {
             <option value={null}></option>
             {
               categories.length > 0 && categories.map(category => 
-                  <option value={category.category}>{category.category}</option>
+                  <option key={category._id} value={category.category}>{category.category}</option>
               )
             }
           </Select>
@@ -457,76 +503,87 @@ function MyProducts() {
         <Label className="mt-2">
           <span>Product Image</span>
           <br />
-        <div
-            className="flex items-center justify-center w-full mt-1"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            >
-            {imageSrc ? (
-                <div className="h-40 w-full relative flex">
-                <button
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                    onClick={handleDelete}
-                >
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    />
-                    </svg>
-                </button>
-                <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-contain rounded-lg"
-                />
+          <div
+              className="flex items-center justify-center w-full mt-1"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              >
+              {imageUrl.length > 0 ? (
+                <div className="flex flex-wrap">
+                  {imageUrl.map((url, index) => (
+                    <div key={index} className="h-40 w-40 relative m-1">
+                      <button
+                        className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                        onClick={() => handleDelete(index)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <img
+                        src={url}
+                        alt="Preview"
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    </div>
+                  ))}
                 </div>
-            ) : (
-                <label
-                htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
-                >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg
-                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 16"
-                    >
-                    <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                    />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or drag and
-                    drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
-                    </p>
-                </div>
-                <input
-                    id="dropzone-file"
-                    type="file"
-                    className="hidden"
-                    onChange={(e) =>{ setImageSrc(e.target.files[0]); setImageUrl(URL.createObjectURL(e.target.files[0]) )}}
-                />
-                </label>
-            )}
-        </div>
+              ) : (
+                  <label
+                  htmlFor="dropzone-file"
+                  className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
+                  >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg
+                      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 20 16"
+                      >
+                      <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                      />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> or drag and
+                      drop
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      </p>
+                  </div>
+                  <input
+                      id="dropzone-file"
+                      type="file"
+                      className="hidden"
+                      name="images"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        setImageSrc([...imageSrc, ...files]);
+                        const urls = files.map(file => URL.createObjectURL(file));
+                        setImageUrl([...imageUrl, ...urls]);
+                      }}
+                  />
+                  </label>
+              )}
+          </div>
 
         </Label>
 
@@ -536,7 +593,7 @@ function MyProducts() {
           <option className='capitalize' value={type}>{type}</option>
             {
               categories.length > 0 && categories.map(category => 
-                  <option value={category.category}>{category.category}</option>
+                  <option key={category._id} value={category.category}>{category.category}</option>
               )
             }
           </Select>
@@ -609,23 +666,49 @@ function MyProducts() {
               <TableRow key={i}>
                 <TableCell>
                     <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
                         onClick={handleImageClick}
                     />
 
-                    {isOpen && (
-                        <div className="modal-overlay" onClick={handleClose}>
-                            <div className="modal-content">
-                                <button className="close-button" onClick={handleClose}>X</button>
-                                <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
-                                    className="modal-image"
-                                    alt="No image Uploaded"
-                                />
-                            </div>
-                        </div>
+                  {isOpen && (
+                      <div className="modal-overlay" onClick={handleClose}>
+                          <div className="modal-content">
+                              <button className="close-button" onClick={handleClose}>
+                                  X
+                              </button>
+
+                              <div className="carousel flex items-center justify-center gap-5 lg:gap-10">
+                                  <button
+                                      className="carousel-prev text-3xl lg:text-4xl p-2 lg:p-4"
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePrevImage(dt);
+                                      }}
+                                  >
+                                      &#9664;
+                                  </button>
+
+                                  <img
+                                      src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[currentImageIndex]}`}
+                                      className="modal-image w-3/4 max-w-[200px] lg:max-w-[600px] h-auto"
+                                      alt="Product"
+                                  />
+
+                                  <button
+                                      className="carousel-next text-3xl lg:text-4xl p-2 lg:p-4"
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleNextImage(dt);
+                                      }}
+                                  >
+                                      &#9654;
+                                  </button>
+                              </div>
+
+                          </div>
+                      </div>
                     )}
                 </TableCell>
                 <TableCell>
@@ -661,8 +744,9 @@ function MyProducts() {
                       setPrice(dt.price);
                       setDescription(dt.description);
                       setSize(dt.size);
-                      setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`);
                       setImageSrc(dt.image);
+                      const imageUrls = dt.image.map(image => `${process.env.REACT_APP_API_URL}/uploads/${image}`);
+                      setImageUrl(imageUrls);
                       openEditModal();
                     }} 
                     className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>

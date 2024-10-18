@@ -12,23 +12,28 @@ const routes = [
     name: 'Dashboard', // name that appear in Sidebar
   },
   {
-    icon: 'FormsIcon',
-    name: 'Products',
-    routes: [
-      {
-        path: '/app/my_products',
-        name: 'My Products',
-      },
-      {
-        path: '/app/approved_products',
-        name: 'Approved Products',
-      },
-      {
-        path: '/app/pending_products',
-        name: 'Products Pending Approval',
-      }
-    ]
+    path: '/app/my_products', // the url
+    icon: 'FormsIcon', // the component being exported from icons/index.js
+    name: 'Products', // name that appear in Sidebar
   },
+  // {
+  //   icon: 'FormsIcon',
+  //   name: 'Products',
+  //   routes: [
+  //     {
+  //       path: '/app/my_products',
+  //       name: 'My Products',
+  //     },
+  //     {
+  //       path: '/app/approved_products',
+  //       name: 'Approved Products',
+  //     },
+  //     {
+  //       path: '/app/pending_products',
+  //       name: 'Products Pending Approval',
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/app/videos',
   //   icon: 'PlayIcon',
@@ -59,11 +64,11 @@ const routes = [
     icon: 'CategoryIcon',
     name: 'Manage Categories',
   },
-  {
-    path: '/app/events',
-    icon: 'EventIcon',
-    name: 'Events',
-  },
+  // {
+  //   path: '/app/events',
+  //   icon: 'EventIcon',
+  //   name: 'Events',
+  // },
   {
     path: '/app/locations',
     icon: 'LocationIcon',

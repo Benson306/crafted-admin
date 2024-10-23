@@ -201,7 +201,7 @@ function DeliveryLocations() {
             filteredData.map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <span className="text-sm">{dt.name}</span>
+                  <span className="text-sm">{dt.town}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">Ksh. { dt.price }</span>

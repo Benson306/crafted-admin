@@ -120,6 +120,7 @@ function MyProducts() {
     };
 
     const handleDelete = (index) => {
+      console.log(index);
         const updatedImageSrc = [...imageSrc];
         const updatedImageUrl = [...imageUrl];
         updatedImageSrc.splice(index, 1);
@@ -265,7 +266,6 @@ function MyProducts() {
     formData.append('size', size);
 
     imageSrc.forEach((image, index) => {
-      console.log(image);
         formData.append(`images`, image);
     });
 
@@ -283,6 +283,9 @@ function MyProducts() {
                 type:'success'
             })
             setChange(true);
+            setTimeout(()=>{
+              window.location.reload();
+            },700)
         }else{
           response.json().then( err => {
             console.log(err)
@@ -298,16 +301,6 @@ function MyProducts() {
         })
     })
   }
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleImageClick = () => {
-      setIsOpen(true);
-  };
-
-  const handleClose = () => {
-      setIsOpen(false);
-  };
 
   const [categories, setCategories] = useState([]);
 
@@ -325,18 +318,30 @@ function MyProducts() {
   },[])
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentProductImages, setCurrentProductImages] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Function to handle going to the next image
-  const handleNextImage = (dt) => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % dt.image.length);
-      console.log(currentImageIndex);
+  const handleImageClick = (index, images) => {
+    setCurrentImageIndex(index);  // Set the clicked image index
+    setCurrentProductImages(images);  // Set the clicked product's images
+    setIsOpen(true);  // Open the modal
   };
 
-  // Function to handle going to the previous image
-  const handlePrevImage = (dt) => {
-      setCurrentImageIndex((prevIndex) =>
-          (prevIndex - 1 + dt.image.length) % dt.image.length
-      );
+  const handleClose = () => {
+    setCurrentImageIndex(0);
+      setIsOpen(false);
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? currentProductImages.length - 1 : prevIndex - 1
+    );
+  };
+  
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === currentProductImages.length - 1 ? 0 : prevIndex + 1
+    );
   };
 
   return (
@@ -367,7 +372,7 @@ function MyProducts() {
                   <div key={index} className="h-40 w-40 relative m-1">
                     <button
                       className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                      onClick={() => handleDelete(index)}
+                      onClick={(e) =>{ e.preventDefault(); handleDelete(index); }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -514,7 +519,7 @@ function MyProducts() {
                     <div key={index} className="h-40 w-40 relative m-1">
                       <button
                         className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                        onClick={() => handleDelete(index)}
+                        onClick={(e) =>{ e.preventDefault(); handleDelete(index); } }
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -665,52 +670,53 @@ function MyProducts() {
             data.map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                    <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                        className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
-                        alt="No image Uploaded"
-                        onClick={handleImageClick}
-                    />
+                <img
+                  src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
+                  className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
+                  alt="No image Uploaded"
+                  onClick={() => {
+                    handleImageClick(0, dt.image);  // Pass the image index (0) and the product images
+                  }}
+                />
 
-                  {isOpen && (
-                      <div className="modal-overlay" onClick={handleClose}>
-                          <div className="modal-content">
-                              <button className="close-button" onClick={handleClose}>
-                                  X
-                              </button>
+                {isOpen && (
+                  <div className="modal-overlay" onClick={handleClose}>
+                    <div className="modal-content">
+                      <button className="close-button" onClick={handleClose}>
+                        X
+                      </button>
 
-                              <div className="carousel flex items-center justify-center gap-5 lg:gap-10">
-                                  <button
-                                      className="carousel-prev text-3xl lg:text-4xl p-2 lg:p-4"
-                                      onClick={(e) => {
-                                          e.stopPropagation();
-                                          handlePrevImage(dt);
-                                      }}
-                                  >
-                                      &#9664;
-                                  </button>
+                      <div className="carousel flex items-center justify-center gap-5 lg:gap-10">
+                        <button
+                          className="carousel-prev text-3xl lg:text-4xl p-2 lg:p-4"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePrevImage();
+                          }}
+                        >
+                          &#9664;
+                        </button>
 
-                                  <img
-                                      src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[currentImageIndex]}`}
-                                      className="modal-image w-3/4 max-w-[200px] lg:max-w-[600px] h-auto"
-                                      alt="Product"
-                                  />
+                        <img
+                          src={`${process.env.REACT_APP_API_URL}/uploads/${currentProductImages[currentImageIndex]}`}
+                          className="modal-image w-3/4 max-w-[200px] lg:max-w-[600px] h-auto"
+                          alt="Product"
+                        />
 
-                                  <button
-                                      className="carousel-next text-3xl lg:text-4xl p-2 lg:p-4"
-                                      onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleNextImage(dt);
-                                      }}
-                                  >
-                                      &#9654;
-                                  </button>
-                              </div>
-
-                          </div>
+                        <button
+                          className="carousel-next text-3xl lg:text-4xl p-2 lg:p-4"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNextImage();
+                          }}
+                        >
+                          &#9654;
+                        </button>
                       </div>
-                    )}
-                </TableCell>
+                    </div>
+                  </div>
+                )}
+              </TableCell>
                 <TableCell>
                     <span className="text-sm">{dt.productName}</span>
                     <br />
@@ -746,7 +752,7 @@ function MyProducts() {
                       setSize(dt.size);
                       setImageSrc(dt.image);
                       const imageUrls = dt.image.map(image => `${process.env.REACT_APP_API_URL}/uploads/${image}`);
-                      setImageUrl(imageUrls);
+                      setImageUrl(prevImageUrls => [...prevImageUrls, ...imageUrls]);
                       openEditModal();
                     }} 
                     className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>

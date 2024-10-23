@@ -162,7 +162,7 @@ function DeliveryLocations() {
         if(search === '' || search === null){
             return item;
         }else if(
-            item.name.toLowerCase().includes(search.toLowerCase())
+            item.town.toLowerCase().includes(search.toLowerCase())
         ){
             return item;
         }
@@ -211,7 +211,7 @@ function DeliveryLocations() {
                         <button onClick={e => {
                             e.preventDefault();
                             setEditId(dt._id);
-                            setTown(dt.name);
+                            setTown(dt.town);
                             setPrice(dt.price);
                             openEditModal();
                             //handle(dt._id);

@@ -247,7 +247,7 @@ function Modals() {
     <>
       <ToastContainer />
       
-      <PageTitle>Manage Users</PageTitle>
+      <PageTitle>Manage Admin Users</PageTitle>
 
       <div className="flex mr-5 mb-5 justify-end">
         <Button onClick={openModal}>Add A New User</Button>

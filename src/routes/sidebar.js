@@ -103,7 +103,7 @@ const routes = [
   {
     path: '/app/modals',
     icon: 'PeopleIcon',
-    name: 'Manage Users',
+    name: 'Manage Admin Users',
   }
 ]
 

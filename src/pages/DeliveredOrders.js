@@ -123,8 +123,8 @@ function Tables() {
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
                     <div>
                       <p className="font-semibold">{dt.first_name} {dt.second_name}</p>
-                      <p className="text-sm">{dt.email}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.phone_number}</p>
+                      <p className="text-sm">{dt.owner_email}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.owner_phoneNumber}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -133,10 +133,10 @@ function Tables() {
                         <div>
                         {
                           dt.items.map( item => 
-                            <div className='mb-1 border-b p-2'>
+                            <div className='mb-1 p-2'>
                               <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
+                              {/* <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p> */}
                             </div>
                           )
                         }

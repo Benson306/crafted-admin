@@ -49,6 +49,7 @@ function MyProducts() {
   }
   const [productName, setProductName] = useState(null);
   const [type, setType] = useState(null);
+  const [beforePrice, setBeforePrice] = useState(0);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState(null);
   const [size, setSize] = useState(null);
@@ -87,6 +88,7 @@ function MyProducts() {
   function closeModal() {
     setProductName(null);
     setType(null);
+    setBeforePrice(0);
     setPrice(0);
     setDescription(null);
     setSize(null);
@@ -131,7 +133,7 @@ function MyProducts() {
 
 
     const handleSubmit = () => {
-      if (!productName || price < 1 || imageSrc.length === 0 || !type || !size || !description) {
+      if (!productName || beforePrice < 1 || price < 1 || imageSrc.length === 0 || !type || !size || !description) {
           toast('All fields must be filled', { type: 'error' });
           return;
       }
@@ -140,6 +142,7 @@ function MyProducts() {
 
       formData.append('productName', productName);
       formData.append('type', type);
+      formData.append('beforePrice', beforePrice);
       formData.append('price', price);
       formData.append('description', description);
       formData.append('size', size);
@@ -240,6 +243,7 @@ function MyProducts() {
   function closeEditModal(){
     setProductName(null);
     setType(null);
+    setBeforePrice(0);
     setPrice(0);
     setDescription(null);
     setSize(null);
@@ -249,7 +253,7 @@ function MyProducts() {
   }
 
   const handleEdit = () =>{
-    if(productName == null || price < 1 || imageSrc == null || type == null){
+    if(productName == null || beforePrice < 1 || price < 1 || imageSrc == null || type == null){
         toast('All fields must be filled',{
             type:'error'
         })
@@ -260,6 +264,7 @@ function MyProducts() {
 
     formData.append('productName', productName);
     formData.append('type', type);
+    formData.append('beforePrice', beforePrice);
     formData.append('price', price);
     // formData.append('image', imageSrc)
     formData.append('description', description);
@@ -473,7 +478,12 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-2">
-          <span>Price</span>
+          <span>Previous Price</span>
+          <Input className="mt-1" type="number" placeholder="0" onChange={e => setBeforePrice(e.target.value)} required/>
+        </Label>
+
+        <Label className="mt-2">
+          <span>Current Price</span>
           <Input className="mt-1" type="number" placeholder="0" onChange={e => setPrice(e.target.value)} required/>
         </Label>
 
@@ -619,6 +629,11 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-2">
+          <span>Previous Price</span>
+          <Input className="mt-1" type="number" placeholder="0" value={beforePrice} onChange={e => setBeforePrice(e.target.value)} required/>
+        </Label>
+
+        <Label className="mt-2">
           <span>Price</span>
           <Input className="mt-1" type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} required/>
         </Label>
@@ -718,15 +733,15 @@ function MyProducts() {
                 )}
               </TableCell>
                 <TableCell>
-                    <span className="text-sm">{dt.productName}</span>
+                    <span className="text-sm break-words whitespace-normal w-20">{dt.productName}</span>
                     <br />
                     <span className="text-xs capitalize">{dt.type}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{dt.size}</span>
+                  <span className="text-sm w-20 break-words whitespace-normal">{dt.size}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs capitalize">{dt.description}</span>
+                  <div className="text-xs capitalize w-40 overflow-hidden text-ellipsis whitespace-nowrap">{dt.description}</div>
                 </TableCell>
                 <TableCell>
                   <div className='flex justify-center'>
@@ -747,6 +762,7 @@ function MyProducts() {
                       setEditId(dt._id);
                       setProductName(dt.productName);
                       setType(dt.type);
+                      setBeforePrice(dt.beforePrice);
                       setPrice(dt.price);
                       setDescription(dt.description);
                       setSize(dt.size);

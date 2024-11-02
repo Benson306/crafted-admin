@@ -670,7 +670,8 @@ function MyProducts() {
               <TableCell>Size</TableCell>
               <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>
-              <TableCell>Price</TableCell>
+              <TableCell>Previous Price</TableCell>
+              <TableCell>Current Price</TableCell>
               <TableCell>Edit</TableCell>
               <TableCell>Delete</TableCell>
             </tr>
@@ -751,6 +752,9 @@ function MyProducts() {
                       onChange={(e)=> handleAvailabilityToggle( dt._id ,e.target.checked)}
                       />
                   </div>
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs capitalize">Ksh. {dt.beforePrice}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-xs capitalize">Ksh. {dt.price}</span>

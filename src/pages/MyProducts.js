@@ -48,7 +48,7 @@ function MyProducts() {
     setPageTable(p)
   }
   const [productName, setProductName] = useState(null);
-  const [type, setType] = useState(null);
+  const [type, setType] = useState([]);
   const [beforePrice, setBeforePrice] = useState(0);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState(null);
@@ -87,7 +87,7 @@ function MyProducts() {
 
   function closeModal() {
     setProductName(null);
-    setType(null);
+    setType([]);
     setBeforePrice(0);
     setPrice(0);
     setDescription(null);
@@ -141,14 +141,14 @@ function MyProducts() {
       const formData = new FormData();
 
       formData.append('productName', productName);
-      formData.append('type', type);
       formData.append('beforePrice', beforePrice);
       formData.append('price', price);
       formData.append('description', description);
       formData.append('size', size);
 
+      type.forEach((item) => formData.append('type', item));
+
       imageSrc.forEach((image, index) => {
-        console.log(image);
           formData.append(`images`, image);
       });
 
@@ -242,7 +242,7 @@ function MyProducts() {
 
   function closeEditModal(){
     setProductName(null);
-    setType(null);
+    setType([]);
     setBeforePrice(0);
     setPrice(0);
     setDescription(null);
@@ -263,12 +263,13 @@ function MyProducts() {
     const formData = new FormData();
 
     formData.append('productName', productName);
-    formData.append('type', type);
     formData.append('beforePrice', beforePrice);
     formData.append('price', price);
     // formData.append('image', imageSrc)
     formData.append('description', description);
     formData.append('size', size);
+
+    type.forEach((item) => formData.append('type', item));
 
     imageSrc.forEach((image, index) => {
         formData.append(`images`, image);
@@ -452,14 +453,35 @@ function MyProducts() {
 
         <Label className="mt-4">
           <span>Category</span>
-          <Select className="mt-1" onChange={e => setType(e.target.value)}>
+          <Select 
+            className="mt-1" 
+            onChange={(e) => {
+              const selectedCategory = e.target.value;
+              setType((prevType) => 
+                prevType.includes(selectedCategory) ? prevType : [...prevType, selectedCategory]
+              );
+            }}
+          >
             <option value={null}></option>
-            {
-              categories.length > 0 && categories.map(category => 
-                  <option key={category._id} value={category.category}>{category.category}</option>
-              )
-            }
+            {categories.length > 0 && categories.map(category => (
+              <option key={category._id} value={category.category}>
+                {category.category}
+              </option>
+            ))}
           </Select>
+
+          <div className='flex gap-1 my-2'>
+            {type.map((tp, index) => (
+              <div key={index} className='bg-gray-200 flex gap-1 px-2 py-1 text-xs'>
+                <span>{tp}</span>
+                <button 
+                  onClick={() => setType((prevType) => prevType.filter(item => item !== tp))}
+                >
+                  X
+                </button>
+              </div>
+            ))}
+          </div>
         </Label>
         
         <Label className="mt-2">
@@ -602,7 +624,7 @@ function MyProducts() {
 
         </Label>
 
-        <Label className="mt-4">
+        {/* <Label className="mt-4">
           <span>Category</span>
           <Select className="mt-1" onChange={e => setType(e.target.value)}>
           <option className='capitalize' value={type}>{type}</option>
@@ -612,7 +634,40 @@ function MyProducts() {
               )
             }
           </Select>
+        </Label> */}
+        <Label className="mt-4">
+          <span>Category</span>
+          <Select 
+            className="mt-1" 
+            onChange={(e) => {
+              const selectedCategory = e.target.value;
+              setType((prevType) => 
+                prevType.includes(selectedCategory) ? prevType : [...prevType, selectedCategory]
+              );
+            }}
+          >
+            <option value={null}></option>
+            {categories.length > 0 && categories.map(category => (
+              <option key={category._id} value={category.category}>
+                {category.category}
+              </option>
+            ))}
+          </Select>
+
+          <div className='flex gap-1 my-2'>
+            {type.map((tp, index) => (
+              <div key={index} className='bg-gray-200 flex gap-1 px-2 py-1 text-xs'>
+                <span>{tp}</span>
+                <button 
+                  onClick={() => setType((prevType) => prevType.filter(item => item !== tp))}
+                >
+                  X
+                </button>
+              </div>
+            ))}
+          </div>
         </Label>
+
         <Label className="mt-2">
           <span>Product Name</span>
           <Input className="mt-1" type="email" placeholder="Product name" value={productName} onChange={e => setProductName(e.target.value)} required/>
@@ -736,7 +791,9 @@ function MyProducts() {
                 <TableCell>
                     <span className="text-sm break-words whitespace-normal w-20">{dt.productName}</span>
                     <br />
-                    <span className="text-xs capitalize">{dt.type}</span>
+                    <span className="text-xs capitalize flex gap-1 my-1">
+                      {dt.type.map( tp => <div className='bg-gray-200 px-2 py-1 rounded-lg'>{tp}</div>)}
+                      </span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm w-20 break-words whitespace-normal">{dt.size}</span>
